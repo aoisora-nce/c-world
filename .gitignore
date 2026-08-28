@@ -1,3 +1,6 @@
+# UGC tmp folders/files
+tmp/
+
 # Prerequisites
 *.d
 
