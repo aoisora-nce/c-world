@@ -35,8 +35,7 @@ int main() {
       }
       if (status != 1) {
         printf("Invalid Input! Enter a valid integer.\n");
-        while (getchar() != '\n')
-          ;
+        while (getchar() != '\n');
         continue;
       }
       counter++;
@@ -52,14 +51,12 @@ int main() {
     char choice;
     printf("Play again? [y/n] ");
     scanf(" %c", &choice);
-    if (choice=='y' || choice=='Y') {printf("\n\n");continue;}
+    if (choice == 'y' || choice == 'Y') {
+      printf("\n\n");
+      continue;
+    }
     break;
   }
   printf("\nExiting game. Goodbye!\n");
   return 0;
 }
-
-
-
-
-
