@@ -17,13 +17,13 @@
 
 void input_nums(int nums[]);
 void show_nums(const int nums[]);
-void squares(), cubes();  // skipped arg in prototype
+void squares(int *), cubes(int *);  // skipped arg in prototype
 int largest(int nums[]);
 int twice(int *num);
 void doubles(int nums[]);
 void type(int nums[]);
 void reset_nums(int nums[]);
-void swap();
+void swap(int *);
 
 int main() {
     int numbers[5];
@@ -104,15 +104,18 @@ void doubles(int nums[]) {
 }
 
 int largest(int nums[]) {
-    // ********* Method 1: Using conditionals **********
+    /* ********* Method 1: Using conditionals **********
+     * Change > with >= for handling duplicates numbers
+    int a=nums[0], b=nums[1], c=nums[2], d=nums[3], e=nums[4];
+    int largest = e;
+    if (a>b && a>c && a>d && a>e) largest = a;
+    else if (b>a && b>c && b>d && b>e) largest = b;
+    else if (c>a && c>b && c>d && c>e) largest = c;
+    else if (d>a && d>b && d>c && d>e) largest = d;
+    return largest;
+    */
 
-    // int a=nums[0], b=nums[1], c=nums[2], d=nums[3], d=nums[4];
-    // int largest = a;
-    // if (a>b && a>c && a>d && a>e) largest = a;
-    // else if (b>a && b>c && b>d && b>e) largest = b;
-    // ........
-
-    // ********* Method 2: Using loops **********
+    /* ********* Method 2: Using loops **********
     int largest = nums[0];
     for (int i=0; i<5; i++) {
         for (int j=0; j<5; j++) {
@@ -121,6 +124,14 @@ int largest(int nums[]) {
             }
             largest = nums[i];
         }
+    }
+    return largest;
+    */
+
+    // ******** Method 3: Simple ************
+    int largest = nums[0];
+    for (int i=0; i<5; i++){
+        if (nums[i]>largest) largest=nums[i];
     }
     return largest;
 }
