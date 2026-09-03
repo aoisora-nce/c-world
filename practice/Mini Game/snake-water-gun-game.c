@@ -1,4 +1,4 @@
-/* MINI-GAME @2.1.0
+/* MINI-GAME @2.1.1
  * Problem: Build a simple Snake, Water, Gun game using conditional statements
  * and random number generation.
 */
@@ -44,7 +44,7 @@ int main() {
             if (scanf("%d", &user_choice) == 1) {
                 if (user_choice<4 && user_choice>0) break;
             }
-            printf(">> Not a vaild choice! [Hint: Enter a number between 1-3]\n");
+            printf(">> Not a valid choice! [Hint: Enter a number between 1-3]\n");
             while(getchar() != '\n');
         }
         printf("Your Choice: %s \t BOT Choice: %s \n", CHOICES[user_choice-1], CHOICES[bot_choice-1]);
