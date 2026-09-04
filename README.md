@@ -14,4 +14,15 @@
 * To store data using pointers, memory size is required {Same for arrays}
 * Attempting (*ptr = 'A';) (uninitialized pointer) causes undefined behavior {segmentation fault}.
 
-# In C, Memory size is fixed and allocated automatically at compile time.
+* Passing an array into a function, decays into a raw pointer (ptr), so sizeof in that function will return the pointer size (8 bytes), NOT the whole array size!
+
+* Recall: ptr vs *ptr vs &ptr (addr of data, data, addr of ptr)
+* ptr[i] => *(ptr+i) (Indexing dereferences automatically)
+* ptr[i] == i[ptr] Addition is commutative
+* arr => &arr[0] (Array name decays to address of 1st element)
+* sizeof(arr) => array sizes in bytes
+* sizeof(*ptr) => size of 1 element/struct (e.g., 4 for int)
+* sizeof(ptr) => size of addr (8 bytes in x64)
+
+
+# In C, Memory size is fixed and allocated automatically at compile time unless dynamic memory func is used.

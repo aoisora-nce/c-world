@@ -7,9 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <unistd.h>
 
 void clear_screen() {
+    // return;
     #ifdef _WIN32
     system("cls");
     #else
@@ -27,6 +29,12 @@ void splash() {
     printf(" Done ✅\n");
     sleep(1);
 
+}
+
+void wait_for_enter() {
+    printf("\n>> Press Enter to continue...");
+    getchar();
+    printf("\n\n"); // In case scree is not cleared
 }
 
 void input(char *message, char *format, void *address) {
@@ -52,10 +60,11 @@ void input(char *message, char *format, void *address) {
         break; // Success
     }
 }
-void eval_choice(int);
+void eval_choice(int choice);
+int check_capacity(int count);
 
 void create_char();
-void show_char();
+void show_chars();
 void view_char();
 void train_char();
 void battle();
@@ -85,12 +94,22 @@ struct Character {
     char class[20];
     int hp;
     int attack;
-    int damage;
+    int defense;
     int level;
     int wins;
     int losses;
 };
 typedef struct Character TypeChar;
+
+char *char_class[3] = {"Barbarian", "Archer", "Wizard"};
+
+TypeChar Barbarian = {.hp=120, .attack=15, .defense=12};
+TypeChar Archer = {.hp=100, .attack=20, .defense=8};
+TypeChar Wizard = {.hp=80, .attack=25, .defense=6};
+
+TypeChar *characters;
+int char_count = 0;  // default 0 characters counter
+int char_capacity = 2; // default capacity for characters (currently 2)
 
 /* Analogy @1.0
  *
@@ -101,6 +120,7 @@ typedef struct Character TypeChar;
  * and gives the new room number (memory address) to `characters` (in our case).
 */
 
+/*
 void check_capacity(int count, int *capacity, TypeChar **ptr) {
     if (count >= *capacity) {
         *capacity += 2;
@@ -108,34 +128,52 @@ void check_capacity(int count, int *capacity, TypeChar **ptr) {
         printf("[Info] Allocated new size: %d * %zu bytes \n", *capacity, sizeof(**ptr));
     }
 }
+*/
 
 int main() {
-    TypeChar *characters;
     int choice;
-    int count = 0;  // default 0 characters counter
-    int capacity = 2; // default capacity for characters (currently 2)
+
     printf("Size of characters %zu\n", sizeof(*characters));
-    characters = calloc(capacity, sizeof(*characters)); // malloc(capacity*sizeof(*characters));
+    // malloc(capacity*sizeof(*characters));
+    characters = calloc(char_capacity, sizeof(*characters));
 
     splash();
-    print_menu();
-    input("Choice: ", "%d", &choice);
-    eval_choice(choice);
+    while (true) {
+        print_menu();
+        input("Choice: ", "%d", &choice);
+        eval_choice(choice);
 
-    check_capacity(count, &capacity, &characters);
+        // NO longer needed as we moved all the variables out of main() scope to global scope
+        // check_capacity(count, &capacity, &characters);
+    }
 
+    return 0;
+}
 
+int check_capacity(int count) {
+    if (count >= char_capacity) {
+        int new_capacity = char_capacity + 2;
+        TypeChar *tmp = realloc(characters, new_capacity*sizeof(*characters));
+        if (tmp == NULL) {
+            printf("[Error] Memory reallocation failed.");
+            return 1;
+        } else {
+            characters = tmp;
+            char_capacity = new_capacity;
+            printf("[Info] Allocated new size: %d * %zu bytes \n", char_capacity, sizeof(*characters));
+            return 0;
+        }
+    }
     return 0;
 }
 
 void eval_choice(int choice) {
     if (choice == 1) create_char();
-    // else if (choice == 2) create_char();
-    // else if (choice == 3) show_char();
-    // else if (choice == 4) view_char();
+    else if (choice == 2) show_chars();
+    // else if (choice == 3) view_char();
     // else if (choice == 4) train_char();
     // else if (choice == 5) battle();
-    // else if (choice == 6) delete_char();
+    else if (choice == 6) delete_char();
     // else if (choice == 7) battle_history();
     else if (choice == 0) exit_main();
 }
@@ -147,8 +185,87 @@ void exit_main() {
 
 
 void create_char() {
-    printf("Created\n");
+    char char_name[20];
+    int choice;
+    input("Character name: ", "%s", char_name);
+    printf("\nChoose class:- \n");
+    printf("1. Barbarian \n");
+    printf("2. Archer \n");
+    printf("3. Wizard \n");
+    input("\nChoice: ", "%d", &choice);
+
+    int tmp_count = char_count + 1;
+    if (check_capacity(tmp_count) != 0) {
+        printf("Character creation failed due to low memory.\n");
+        wait_for_enter();
+        return;
+    }
+    TypeChar selected_class;
+    if (choice == 1) selected_class = Barbarian;
+    else if (choice == 2) selected_class = Archer;
+    else if (choice == 3) selected_class = Wizard;
+
+    characters[char_count] = (TypeChar){
+        .hp= selected_class.hp,
+        .attack=selected_class.attack,
+        .defense=selected_class.defense,
+        .level=1,
+        .wins=0,
+        .losses=0,
+    };
+    strcpy(characters[char_count].name, char_name);
+    strcpy(characters[char_count].class, char_class[choice-1]);
+
+    char_count = tmp_count;
+    printf("[Success] Character [%s] (ID: %d) created successfully.\n", char_name, char_count);
+    wait_for_enter();
 }
+
+void show_chars() {
+    if (char_count == 0) {
+        printf("[404] Characters not found, Add a character first (+_-)!\n");
+        wait_for_enter();
+        return;
+    }
+
+    printf("\n========== CHARACTERS ==========\n");
+    printf("%-3s %-10s %-10s %-4s %-4s %-5s\n", "ID", "NAME", "CLASS", "LVL", "HP", "W/L");
+
+    for (int i=1; i<=char_count; i++) {
+        printf("%-3d %-10s %-10s %-4d %-4d %-d/%-d\n",
+               i,
+               characters[i-1].name,
+               characters[i-1].class,
+               characters[i-1].level,
+               characters[i-1].hp,
+               characters[i-1].wins,
+               characters[i-1].losses
+               );
+    }
+    wait_for_enter();
+}
+
+void delete_char() {
+    int choice;
+    char confirm[5];
+    input("Enter character ID: ", "%d", &choice);
+    TypeChar selected_char = characters[choice-1];
+    printf("Are you sure you want to delete [%s] [%s]\n", selected_char.name, selected_char.class);
+    input("\nType yes to confirm deletion: ", "%4s", confirm);
+
+    if (strcmp(confirm, "yes") == 0) {
+        for (int i=choice; i<=char_count; i++) {
+            characters[i-1] = characters[i];
+        }
+         char_count--;
+        printf("[SUCCESS] Character [%s] deleted successfully.\n", selected_char.name);
+    } else {
+        printf("[Info] Delete Cancelled by the user (O_o)!\n");
+    }
+    wait_for_enter();
+}
+
+
 
 
 
