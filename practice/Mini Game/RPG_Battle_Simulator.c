@@ -70,6 +70,9 @@ void train_char();
 void battle();
 void delete_char();
 void battle_history();
+
+void load_data();
+void save_data();
 void exit_main();
 
 void print_menu() {
@@ -85,6 +88,8 @@ void print_menu() {
     printf("5. Battle \n");
     printf("6. Delete Character \n");
     printf("7. Show Battle History \n");
+    printf("8. Load Saved Characters (*=*) \n");
+    printf("9. Save Characters (RPG-BS.data) (*o*) \n");
     printf("0. Exit \n");
     printf("\n");
 }
@@ -141,6 +146,7 @@ int main() {
     while (true) {
         print_menu();
         input("Choice: ", "%d", &choice);
+        printf("\n");
         eval_choice(choice);
 
         // NO longer needed as we moved all the variables out of main() scope to global scope
@@ -148,6 +154,12 @@ int main() {
     }
 
     return 0;
+}
+
+void exit_main() {
+    save_data();
+    printf("\nBYE BYE! See You Next Time!\n");
+    exit(EXIT_SUCCESS);
 }
 
 int check_capacity(int count) {
@@ -175,13 +187,11 @@ void eval_choice(int choice) {
     // else if (choice == 5) battle();
     else if (choice == 6) delete_char();
     // else if (choice == 7) battle_history();
+    else if (choice == 8) load_data();
+    else if (choice == 9) save_data();
     else if (choice == 0) exit_main();
 }
 
-void exit_main() {
-    printf("\nBYE BYE! See You Next Time!\n");
-    exit(EXIT_SUCCESS);
-}
 
 
 void create_char() {
@@ -229,10 +239,10 @@ void show_chars() {
     }
 
     printf("\n========== CHARACTERS ==========\n");
-    printf("%-3s %-10s %-10s %-4s %-4s %-5s\n", "ID", "NAME", "CLASS", "LVL", "HP", "W/L");
+    printf("%-4s %-15s %-15s %-5s %-5s %-5s\n", "ID", "NAME", "CLASS", "LVL", "HP", "W/L");
 
     for (int i=1; i<=char_count; i++) {
-        printf("%-3d %-10s %-10s %-4d %-4d %-d/%-d\n",
+        printf("%-4d %-15s %-15s %-5d %-5d %-d/%-d\n",
                i,
                characters[i-1].name,
                characters[i-1].class,
@@ -265,6 +275,65 @@ void delete_char() {
     wait_for_enter();
 }
 
+
+void load_data() {
+    printf("Are you sure, you want to load game-data, it may overwrite all your current temporary characters?");
+    char confirm[5];
+    input("\nType yes to proceed: ", "%4s", confirm);
+    if (strcmp(confirm, "yes") != 0) return;
+
+    FILE *fptr = fopen("RPG-BS.data", "rb");
+    if (fptr == NULL) {
+        printf("[IO Error] Error opening saved file, possibly doesnt exist.\n");
+        fclose(fptr);
+        wait_for_enter();
+        return;
+    }
+    int count=0;
+    while (true) {
+        check_capacity(char_count);
+        int status = fread(&characters[char_count], sizeof(*characters), 1, fptr);
+        if (status==1) {
+            count++;
+            char_count++;
+            // loop continues...
+        } else {
+            if (feof(fptr)) {
+                printf("[Info] Successfully reached end of file.\n");
+            } else if (ferror(fptr)) {
+                printf("[IO Error] Error reading file data.\n");
+            }
+            break; // break loop on EOF or error
+        }
+    }
+    printf("Succefully loaded %d characters. Cheers \\|+_+|/\n", count);
+    fclose(fptr);
+    wait_for_enter();
+}
+
+void save_data() {
+    int count = char_count;
+    if (count==0) {
+        printf("[IO Warn] No characters exist! Add a character first (+_-)!\n");
+        wait_for_enter();
+        return;
+    }
+
+    char confirm[5];
+    printf("Are you sure, you want to overwrite your game-data file (+_+)?\n");
+    input("\nType yes to proceed: ", "%4s", confirm);
+    if (strcmp(confirm, "yes") != 0) return;
+
+    FILE *fptr = fopen("RPG-BS.data", "wb");
+    int status = fwrite(characters, sizeof(*characters), count, fptr);
+    if (status == count) {
+        printf("[IO Info] Succefully saved %d characters into data file.\n", count);
+    } else if (status < count) {
+        printf("[IO Error] An error occured while saving char data.\n");
+        printf("In %d Out %d (elements)\n", count, status);
+    }
+    fclose(fptr);
+}
 
 
 
